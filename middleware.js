@@ -1,17 +1,21 @@
-export async function middleware(req) {
-    try {
-        if (req.url.match(/^\/api\//)) {
-            const { headers } = req;
-            const { authorization } = headers;
-            if (!authorization) throw { status: 401, message: 'Unauthorized' };
+export function middleware(req, event) {
+    const pathName = req.nextUrl.pathname;
 
-            const token = authorization.replace(/^Bearer\s/, '');
-            if (!token) throw { status: 401, message: 'Unauthorized' };
-            if (token !== process.env.NEXT_PUBLIC_API_TOKEN) throw { status: 401, message: 'Unauthorized' };
+    if (pathName.startsWith('/api/')) {
+        const authorizationHeader = req?.headers?.get('authorization');
+        console.log('authorizationHeader:', authorizationHeader);
+        let wrongCredentials = true;
 
-            return;
+        if (authorizationHeader) {
+            const token = authorizationHeader.replace(/^Bearer\s/, '');
+            if (token == process.env.NEXT_PUBLIC_API_TOKEN) wrongCredentials = false;
         }
-    } catch (error) {
-        throw error;
+
+        if (!authorizationHeader || wrongCredentials) {
+            return new Response('401 Unauthorized', {
+                status: 401,
+                message: "Not permited"
+            });
+        }
     }
 }
