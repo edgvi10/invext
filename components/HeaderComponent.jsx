@@ -33,7 +33,7 @@ export default function HeaderComponent({ title, active, hideMenu, ...props }) {
     menu_items.push({ href: "/users", icon: "user-tie", label: "Usuários", });
     menu_items.push({
         icon: "list", label: "Configurações", submenu: [
-            { href: "/categories", label: "Categorias", },
+            { href: "/config/categories", label: "Categorias", },
         ]
     });
     return <header>
