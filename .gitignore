@@ -1,0 +1,14 @@
+node_modules
+.next
+.env
+tmp
+out
+dist
+build
+workbox-*
+.vscode
+coverage
+.DS_Store
+yarn.lock
+package-lock.json
+*.log

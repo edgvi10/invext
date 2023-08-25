@@ -1,0 +1,7 @@
+* { margin: 0; padding: 0; text-rendering: optimizeLegibility; box-sizing: border-box; scroll-behavior: smooth; }
+
+html, body, #__next { height: 100%; }
+body { font-family: "Roboto", sans-serif; cursor: default; }
+
+a { text-decoration: none; }
+.fa-spin { animation-duration: 500ms; }
