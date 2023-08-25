@@ -5,3 +5,5 @@ body { font-family: "Roboto", sans-serif; cursor: default; }
 
 a { text-decoration: none; }
 .fa-spin { animation-duration: 500ms; }
+
+*:last-child { margin-bottom: 0; }
