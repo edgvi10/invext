@@ -12,7 +12,7 @@ export function ERPWalker(connection_string) {
 }
 
 export class BaseRepository {
-    constructor(connection_string, table_name) {
+    constructor({ connection_string, table_name }) {
         if (!connection_string) connection_string = process.env.DBWALKER_STRING;
         if (!connection_string) throw new Error("Connection string is required");
 
