@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export default Api = axios.create({
+const Api = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_URL
 });
 
@@ -11,3 +11,5 @@ Api.interceptors.request.use(async (config) => {
     if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
 });
+
+export default Api;
