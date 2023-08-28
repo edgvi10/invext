@@ -1,3 +1,7 @@
+export function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 export function isEmpty(value) {
     return value === undefined || value === null || value === '' || value.toString().trim().length === 0;
 }
@@ -30,4 +34,22 @@ export function dateMask(mask, date) {
     }
 
     return date_string;
+}
+
+export function apiHandler(error, res) {
+    console.log(error);
+    if (error.status) {
+        return res.status(error.status).json({ message: error.message });
+    } else {
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+export function ApiRequestErrorHandler(error) {
+    console.log(error);
+    if (error.response) {
+        return { status: error.response.status, message: error.response.data.message };
+    } else {
+        return { status: 500, message: "Internal server error" };
+    }
 }

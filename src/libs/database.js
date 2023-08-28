@@ -26,6 +26,8 @@ export class BaseRepository {
             where: [],
         }
 
+        this.data = {};
+
         this.use_uuid = false;
         this.use_delete_timestamp = false;
     }
@@ -59,6 +61,11 @@ export class BaseRepository {
                 if (table_fields_keys.includes(key)) data[key] = raw_data[key];
             }
 
+            delete data.created_at;
+            delete data.updated_at;
+            delete data.deleted_at;
+
+            this.data = data;
             return data;
         } catch (error) {
 
@@ -82,8 +89,8 @@ export class BaseRepository {
         try {
             if (this.use_uuid && !raw_data.uuid) raw_data.uuid = await this.dbwalker.uuid();
 
-            const prepared_data = await this.prepare(raw_data);
-            const data = { ...prepared_data };
+            await this.prepare(raw_data);
+            const data = { ...this.data };
 
             const insert_params = { table: this.table_name, data };
             const insert_sql = this.dbwalker.insert(insert_params);
@@ -98,8 +105,8 @@ export class BaseRepository {
 
     async update(raw_data, params) {
         try {
-            const prepared_data = await this.prepare(raw_data);
-            const data = { ...prepared_data };
+            await this.prepare(raw_data);
+            const data = { ...this.data };
 
             if (this.use_uuid) delete data.uuid;
 

@@ -1,4 +1,6 @@
 import { BaseRepository } from "root/src/libs/database";
+import UserRepository from "root/src/repo/UsersRepository";
+
 import { mysqlDate } from "root/src/utils";
 
 export default class RequestRepository extends BaseRepository {
@@ -42,17 +44,41 @@ export default class RequestRepository extends BaseRepository {
         this.select_params.joins = joins;
     }
 
+    async prepare(raw_data) {
+        if (raw_data.status_id)
+            switch (parseInt(raw_data.status_id)) {
+                case 2:
+                    raw_data.closed_at = mysqlDate(new Date());
+                    raw_data.archived_at = null;
+                    break;
+                case 3:
+                    raw_data.archived_at = mysqlDate(new Date());
+                    raw_data.closed_at = null;
+                    break;
+                default:
+                    raw_data.closed_at = null;
+                    raw_data.archived_at = null;
+                    break;
+            }
+
+        await super.prepare(raw_data);
+    }
+
     async select(params) {
         try {
             var select_params = { ...this.select_params };
 
-            if (params.uuid) select_params.where.push({ "request.uuid": params.uuid });
-            if (params.status_id) select_params.where.push({ "request.status_id": params.status_id });
-            if (params.user_uuid) select_params.where.push({ "request.user_uuid": params.user_uuid });
-            if (params.category_uuid) select_params.where.push({ "request.category_uuid": params.category_uuid });
+            if (params.uuid) select_params.where.push(`request.uuid = '${params.uuid}'`);
+            if (params.user_uuid) select_params.where.push(`request.user_uuid = '${params.user_uuid}'`);
+            if (params.owner_uuid) select_params.where.push(`request.owner_uuid = '${params.owner_uuid}'`);
+            if (params.category_uuid) select_params.where.push(`request.category_uuid = '${params.category_uuid}'`);
+            if (params.status_id) select_params.where.push(`request.status_id = '${params.status_id}'`);
 
-            if (params.order_by) select_params.order_by = params.order_by;
-            if (params.order_direction) select_params.order_direction = params.order_direction;
+            select_params.order_by = (params.order_by) ? params.order_by : ["request.status_id", "request.created_at"];
+            select_params.order_direction = (params.order_direction) ? params.order_direction.toUpperCase() : "DESC";
+
+            if (!params.include_archived) select_params.where.push(`request.archived_at IS NULL`);
+            if (!params.include_closed) select_params.where.push(`request.closed_at IS NULL`);
 
             select_params = { ...select_params, ...this.pagination(params) }
 
@@ -65,17 +91,44 @@ export default class RequestRepository extends BaseRepository {
         }
     }
 
+    async insert(raw_data) {
+        try {
+            if (this.use_uuid && !raw_data.uuid) raw_data.uuid = await this.dbwalker.uuid();
+
+            await this.prepare(raw_data);
+            const data = { ...this.data };
+
+            if (!data.user_uuid) throw { status: "400", message: "user_uuid is required" };
+            const user_repository = new UserRepository();
+            const user_requests = await user_repository.countOpenRequests(raw_data.user_uuid);
+            if (user_requests >= 3) throw { status: "400", message: "You can't have more than 3 open requests" };
+
+            const insert_params = {
+                table: this.table_name,
+                data: data
+            };
+
+            const insert_sql = this.dbwalker.insert(insert_params);
+            const result = await this.dbwalker.query(insert_sql);
+            if (result.affectedRows > 0) return data;
+            else return false;
+        } catch (error) {
+            throw error;
+        }
+    }
+
     async update(raw_data, params) {
         try {
-            const prepared_data = await this.prepare(raw_data);
-            const data = { ...prepared_data };
+            await this.prepare(raw_data);
+            const data = { ...this.data };
 
-            const update_params = { table: this.table_name, data, where: [{ uuid: params.uuid }] };
-            const update_sql = this.dbwalker.update(update_params).toString();
-            console.log(update_sql);
-            const result = await this.dbwalker.query(update_sql);
-            if (result.affectedRows > 0) return true;
-            else return false;
+            if (data.status_id == 1 && data.user_uuid) {
+                const user_repository = new UserRepository();
+                const user_requests = await user_repository.countOpenRequests(data.user_uuid);
+                if (user_requests >= 3) throw { status: "400", message: "User can't have more than 3 open requests" };
+            }
+
+            return await super.update(data, { where: [{ uuid: params.uuid }] });
         } catch (error) {
             throw error;
         }
@@ -86,7 +139,7 @@ export default class RequestRepository extends BaseRepository {
             const delete_params = {
                 table: this.table_name,
                 data: {
-                    status_id: 2,
+                    status_id: 3,
                     archived_at: mysqlDate(new Date()),
                 },
                 where: [{ uuid: uuid }]

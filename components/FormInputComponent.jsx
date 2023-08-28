@@ -12,6 +12,8 @@ export default function FormInputComponent({ label, name, type = "text", childre
     var colSize = props.colSize ?? null;
     if (props.colSize) delete props.colSize;
 
+    // if (props.defaultValue && (!props.value && props.value.length == 0)) props.value = props.defaultValue;
+
     types.text = <input type={type} name={name} className="form-control" {...props} />;
     types.email = <input type="email" name={name} className="form-control" {...props} pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" />;
     types.password = <input type="password" name={name} className="form-control" {...props} />;

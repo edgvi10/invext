@@ -3,7 +3,6 @@ export function middleware(req, event) {
 
     if (pathName.startsWith('/api/')) {
         const authorizationHeader = req?.headers?.get('authorization');
-        console.log('authorizationHeader:', authorizationHeader);
         let wrongCredentials = true;
 
         if (authorizationHeader) {

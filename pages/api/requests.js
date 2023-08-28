@@ -1,17 +1,16 @@
 import RequestRepository from "root/src/repo/RequestRepository";
+import UserRepository from "root/src/repo/UsersRepository";
 
 export default async function handler(req, res) {
     try {
         const { method, headers, query, body } = req;
 
+        const user_repository = new UserRepository();
         const request_repository = new RequestRepository();
 
         if (method === "GET") {
 
             const params = { ...query };
-
-            if (params.order_by) params.order_by = params.order_by;
-            if (params.order_direction) params.order_direction = params.order_direction;
 
             const select_result = await request_repository.select(params);
 
@@ -79,6 +78,7 @@ export default async function handler(req, res) {
         throw { status: 405, message: 'Method not allowed' }
 
     } catch (error) {
+        console.log(error);
         return res.status(error.status || 500).json({ message: error.message || 'Internal server error' });
     }
 }
