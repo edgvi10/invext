@@ -57,7 +57,7 @@ export default class UserRepository extends BaseRepository {
             const select_params = {
                 table: "requests",
                 fields: { count: "COUNT(*)" },
-                where: [{ user_uuid: user_uuid }, { status_id: 1 }]
+                where: [{ owner_uuid: user_uuid }, { status_id: 1 }]
             };
 
             const select_sql = this.dbwalker.select(select_params).toString();
