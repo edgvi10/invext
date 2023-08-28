@@ -57,8 +57,10 @@ export default class UserRepository extends BaseRepository {
             const select_params = {
                 table: "requests",
                 fields: { count: "COUNT(*)" },
-                where: [{ owner_uuid: user_uuid }, { status_id: 1 }, `uuid != '${request_uuid}'`]
+                where: [{ owner_uuid: user_uuid }, { status_id: 1 }]
             };
+
+            if (request_uuid) select_params.where.push(`uuid != '${request_uuid}'`);
 
             const select_sql = this.dbwalker.select(select_params).toString();
             const result = await this.dbwalker.query(select_sql);
