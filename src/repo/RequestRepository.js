@@ -100,7 +100,7 @@ export default class RequestRepository extends BaseRepository {
 
             if (!data.user_uuid) throw { status: "400", message: "user_uuid is required" };
             const user_repository = new UserRepository();
-            const user_requests = await user_repository.countOpenRequests(raw_data.user_uuid);
+            const user_requests = await user_repository.countOpenRequests(raw_data.owner_uuid);
             if (user_requests >= 3) throw { status: "400", message: "You can't have more than 3 open requests" };
 
             const insert_params = {

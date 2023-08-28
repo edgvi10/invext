@@ -59,7 +59,7 @@ export default function HomePage() {
 
             const params = {}
             if (!isEmpty(user_logged.category_uuid)) {
-                params.user_uuid = user_logged.uuid;
+                params.owner_uuid = user_logged.uuid;
                 params.category_uuid = user_logged.category_uuid;
             }
 
@@ -105,7 +105,6 @@ export default function HomePage() {
                 api_request = await api.put("/requests", request_form, { params });
             } else {
                 if (!request_form.user_uuid) request_form.user_uuid = user_logged.uuid;
-                if (!request_form.owner_uuid) request_form.owner_uuid = user_logged.uuid;
 
                 api_request = await api.post("/requests", request_form);
             }
@@ -148,7 +147,7 @@ export default function HomePage() {
     form_inputs.push({ label: "Solução", name: "solution", type: "textarea", placeholder: "Descreva a solução", rows: 5, colSize: "col-12", visibleWhen: { isset: ["uuid"] } });
     form_inputs.push({ label: "Situação", name: "status_id", type: "select", options: status_list, colSize: "col-12 col-xl-6", visibleWhen: { isset: ["uuid"] } });
     form_inputs.push({
-        label: "Usuário Responsável", name: "owner_uuid", type: "select", placeholder: "Selecione um usuário", colSize: "col-12 col-xl-6",
+        label: "Usuário Responsável", name: "owner_uuid", type: "select", placeholder: "** Sem Responsável **", colSize: "col-12 col-xl-6",
         options: users.map(user => { return { value: user.uuid, label: user.name } })
     });
     form_inputs.push({
@@ -219,31 +218,30 @@ export default function HomePage() {
                         </table>
                     </div>
                     <div className="col-12 col-md-4 order-md-1">
-                        <section className="card">
+                        <form onSubmit={requestSubmit} className="card">
                             <div className="card-body p-3">
-                                <form onSubmit={requestSubmit} className="d-flex flex-column">
-                                    <fieldset disabled={loading.requestSubmit} className="row g-3">
-                                        {form_inputs.map((input, index) => {
-                                            if (input.visibleWhen) {
-                                                let visible = true;
-                                                if (input.visibleWhen.isset) visible = input.visibleWhen.isset.every(field => request_form[field] !== undefined && request_form[field] !== null);
-                                                if (input.visibleWhen.notset) visible = input.visibleWhen.notset.some(field => request_form[field] === undefined || request_form[field] === null);
-                                                if (!visible) return null;
-                                            }
-                                            delete input.visibleWhen;
-                                            return <FormInput key={index} {...input} value={request_form[input.name] ?? ""} onChange={requestInputHandler} />
-                                        })}
-                                    </fieldset>
-                                </form>
+                                <fieldset disabled={loading.requestSubmit} className="row g-3">
+                                    {form_inputs.map((input, index) => {
+                                        if (input.visibleWhen) {
+                                            let visible = true;
+                                            if (input.visibleWhen.isset) visible = input.visibleWhen.isset.every(field => request_form[field] !== undefined && request_form[field] !== null);
+                                            if (input.visibleWhen.notset) visible = input.visibleWhen.notset.some(field => request_form[field] === undefined || request_form[field] === null);
+                                            if (!visible) return null;
+                                        }
+                                        delete input.visibleWhen;
+                                        return <FormInput key={index} {...input} value={request_form[input.name] ?? ""} onChange={requestInputHandler} />
+                                    })}
+                                </fieldset>
                             </div>
                             <footer className="card-footer p-3 d-flex flex-row gap-3">
                                 <button type="button" className="btn btn-outline-danger me-auto" onClick={() => setRequestFormData({})}>Cancelar</button>
-                                <button type="button" className="btn btn-primary" onClick={requestSubmit} disabled={loading.requestSubmit}>Salvar Solicitação <IconLoading icon="fa-save" isLoading={loading.requestSubmit} /></button>
+                                <button type="submit" className="btn btn-primary" disabled={loading.requestSubmit}>Salvar Solicitação <IconLoading icon="fa-save" isLoading={loading.requestSubmit} /></button>
                             </footer>
-                        </section>
+                        </form>
                     </div>
                 </div>
-            </section>}
+            </section>
+            }
         </div>
     </main>
 }
