@@ -52,12 +52,12 @@ export default class UserRepository extends BaseRepository {
         }
     }
 
-    async countOpenRequests(user_uuid) {
+    async countOpenRequests(user_uuid, request_uuid) {
         try {
             const select_params = {
                 table: "requests",
                 fields: { count: "COUNT(*)" },
-                where: [{ owner_uuid: user_uuid }, { status_id: 1 }]
+                where: [{ owner_uuid: user_uuid }, { status_id: 1 }, `uuid != '${request_uuid}'`]
             };
 
             const select_sql = this.dbwalker.select(select_params).toString();

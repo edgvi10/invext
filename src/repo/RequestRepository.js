@@ -122,9 +122,9 @@ export default class RequestRepository extends BaseRepository {
             await this.prepare(raw_data);
             const data = { ...this.data };
 
-            if (data.status_id == 1 && data.user_uuid) {
+            if (data.status_id == 1 && data.owner_uuid) {
                 const user_repository = new UserRepository();
-                const user_requests = await user_repository.countOpenRequests(data.user_uuid);
+                const user_requests = await user_repository.countOpenRequests(data.owner_uuid, data.request_uuid);
                 if (user_requests >= 3) throw { status: "400", message: "User can't have more than 3 open requests" };
             }
 
